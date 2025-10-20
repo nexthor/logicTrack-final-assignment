@@ -1,0 +1,6 @@
+@Cap1.LogiTrack_HostAddress = http://localhost:5205
+
+GET {{Cap1.LogiTrack_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

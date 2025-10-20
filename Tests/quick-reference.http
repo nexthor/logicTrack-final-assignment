@@ -1,0 +1,65 @@
+# Quick Test Reference - LogiTrack API
+# Use this file for quick testing and development
+
+@baseUrl = http://localhost:5205
+
+### === HEALTH CHECK ===
+### Quick test to verify API is running
+GET {{baseUrl}}/api/inventory
+Accept: application/json
+
+### === QUICK SETUP ===
+### 1. Create a test order
+POST {{baseUrl}}/api/order
+Content-Type: application/json
+
+{
+    "customerName": "Quick Test User",
+    "datePlaced": "2024-10-20T12:00:00Z"
+}
+
+### 2. Add test inventory item
+POST {{baseUrl}}/api/inventory
+Content-Type: application/json
+
+{
+    "name": "Quick Test Item",
+    "quantity": 5,
+    "location": "Test Area"
+}
+
+### === QUICK VERIFICATION ===
+### Check orders
+GET {{baseUrl}}/api/order
+
+### Check inventory
+GET {{baseUrl}}/api/inventory
+
+### Check specific order (update ID as needed)
+GET {{baseUrl}}/api/order/1
+
+### === QUICK CLEANUP ===
+### Delete test data (update IDs as needed)
+DELETE {{baseUrl}}/api/inventory/1
+
+###
+DELETE {{baseUrl}}/api/order/1
+
+### === ERROR TESTING ===
+### Test 404 - Non-existent order
+GET {{baseUrl}}/api/order/999
+
+### Test 404 - Non-existent inventory item
+DELETE {{baseUrl}}/api/inventory/999
+
+### Test 400 - Invalid order data
+POST {{baseUrl}}/api/order
+Content-Type: application/json
+
+{
+    "datePlaced": "invalid-date"
+}
+
+### === HTTPS VARIANT (uncomment if using HTTPS) ===
+# @httpsBaseUrl = https://localhost:7040
+# GET {{httpsBaseUrl}}/api/inventory

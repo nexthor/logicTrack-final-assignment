@@ -1,0 +1,213 @@
+# Integration Tests - Orders and Inventory Items Relationship
+# Base URL for local development
+# NOTE: This workflow avoids foreign key constraints by creating items independently
+@baseUrl = http://localhost:5205
+@orderUrl = {{baseUrl}}/api/order
+@inventoryUrl = {{baseUrl}}/api/inventory
+
+### 1. Setup: Create an Order
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Integration Test Customer",
+    "datePlaced": "2024-10-20T10:00:00Z"
+}
+
+### 2. Create Independent Inventory Items (no foreign key issues)
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Integration Test Laptop",
+    "quantity": 2,
+    "location": "Test Warehouse"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Integration Test Mouse",
+    "quantity": 5,
+    "location": "Test Warehouse"
+}
+
+### 3. Verify Order with Items
+GET {{orderUrl}}/1
+Accept: application/json
+
+### 4. Get All Inventory Items to see relationships
+GET {{inventoryUrl}}
+Accept: application/json
+
+### 5. Create Independent Inventory Items (no order relationship)
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Standalone Monitor",
+    "quantity": 3,
+    "location": "Storage A"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Standalone Keyboard",
+    "quantity": 10,
+    "location": "Storage B"
+}
+
+### 6. Create Another Order
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Second Test Customer",
+    "datePlaced": "2024-10-20T15:30:00Z"
+}
+
+### 7. Create Items for Second Order
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Second Order Tablet",
+    "quantity": 1,
+    "location": "Premium Storage"
+}
+
+### 8. Verify Second Order
+GET {{orderUrl}}/2
+Accept: application/json
+
+### 9. Get All Orders to see complete data
+GET {{orderUrl}}
+Accept: application/json
+
+### 10. Cleanup Test: Delete Specific Items
+DELETE {{inventoryUrl}}/1
+
+###
+DELETE {{inventoryUrl}}/2
+
+### 11. Cleanup Test: Delete Orders
+DELETE {{orderUrl}}/1
+
+###
+DELETE {{orderUrl}}/2
+
+### 12. Verify Cleanup
+GET {{orderUrl}}
+Accept: application/json
+
+###
+GET {{inventoryUrl}}
+Accept: application/json
+
+### Performance Test: Bulk Order Creation
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Bulk Customer 1",
+    "datePlaced": "2024-10-20T20:00:00Z"
+}
+
+###
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Bulk Customer 2",
+    "datePlaced": "2024-10-20T20:01:00Z"
+}
+
+###
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Bulk Customer 3",
+    "datePlaced": "2024-10-20T20:02:00Z"
+}
+
+###
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Bulk Customer 4",
+    "datePlaced": "2024-10-20T20:03:00Z"
+}
+
+###
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Bulk Customer 5",
+    "datePlaced": "2024-10-20T20:04:00Z"
+}
+
+### Performance Test: Bulk Inventory Creation
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Bulk Item 1",
+    "quantity": 100,
+    "location": "Bulk Storage A"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Bulk Item 2",
+    "quantity": 200,
+    "location": "Bulk Storage B"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Bulk Item 3",
+    "quantity": 150,
+    "location": "Bulk Storage C"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Bulk Item 4",
+    "quantity": 75,
+    "location": "Bulk Storage D"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Bulk Item 5",
+    "quantity": 300,
+    "location": "Bulk Storage E"
+}
+
+### Final Verification: Get All Data
+GET {{orderUrl}}
+Accept: application/json
+
+###
+GET {{inventoryUrl}}
+Accept: application/json

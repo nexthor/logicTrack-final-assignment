@@ -1,0 +1,140 @@
+# Order Controller Tests
+# Base URL for local development
+@baseUrl = http://localhost:5205
+@orderUrl = {{baseUrl}}/api/order
+
+### Get All Orders
+GET {{orderUrl}}
+Accept: application/json
+
+### Create New Order - Basic Order
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "John Smith",
+    "datePlaced": "2024-10-20T10:30:00Z"
+}
+
+### Create New Order - Different Customer
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Alice Johnson",
+    "datePlaced": "2024-10-20T14:15:00Z"
+}
+
+### Create New Order - Corporate Customer
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "TechCorp Solutions Ltd.",
+    "datePlaced": "2024-10-20T09:00:00Z"
+}
+
+### Create New Order - Current DateTime
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Sarah Williams",
+    "datePlaced": "2024-10-20T16:45:00Z"
+}
+
+### Create Order with Items (Note: Items might need to be added separately via relationship)
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Michael Brown",
+    "datePlaced": "2024-10-20T11:20:00Z",
+    "items": []
+}
+
+### Get Order by ID (Replace {id} with actual ID from POST response)
+GET {{orderUrl}}/1
+Accept: application/json
+
+### Get Order by ID - Different Order
+GET {{orderUrl}}/2
+Accept: application/json
+
+### Get Order by ID - With Items Included
+GET {{orderUrl}}/3
+Accept: application/json
+
+### Get Non-existent Order
+GET {{orderUrl}}/999
+Accept: application/json
+
+### Delete Order by ID (Replace {id} with actual ID)
+DELETE {{orderUrl}}/1
+
+### Delete Order - Different ID
+DELETE {{orderUrl}}/2
+
+### Delete Non-existent Order
+DELETE {{orderUrl}}/999
+
+### Create Order - Invalid Data (Missing Customer Name)
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "datePlaced": "2024-10-20T12:00:00Z"
+}
+
+### Create Order - Invalid Date Format
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Test Customer",
+    "datePlaced": "invalid-date"
+}
+
+### Create Order - Empty Customer Name
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "",
+    "datePlaced": "2024-10-20T12:00:00Z"
+}
+
+### Test Sequence: Create Order then Get by ID
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Test Sequence Customer",
+    "datePlaced": "2024-10-20T18:00:00Z"
+}
+
+### Get the created order (use ID from previous response)
+GET {{orderUrl}}/1
+Accept: application/json
+
+### Test Sequence: Create Multiple Orders then Get All
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Bulk Test Customer 1",
+    "datePlaced": "2024-10-20T19:00:00Z"
+}
+
+###
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Bulk Test Customer 2",
+    "datePlaced": "2024-10-20T19:15:00Z"
+}
+
+###
+GET {{orderUrl}}
+Accept: application/json

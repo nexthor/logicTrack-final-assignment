@@ -1,0 +1,100 @@
+# Inventory Controller Tests
+# Base URL for local development
+@baseUrl = http://localhost:5205
+@inventoryUrl = {{baseUrl}}/api/inventory
+
+### Get All Inventory Items
+GET {{inventoryUrl}}
+Accept: application/json
+
+### Add New Inventory Item - Basic Item
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Laptop Dell XPS 13",
+    "quantity": 5,
+    "location": "Warehouse A - Shelf 1"
+}
+
+### Add New Inventory Item - Office Supplies
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Office Chair Ergonomic",
+    "quantity": 12,
+    "location": "Warehouse B - Row 3"
+}
+
+### Add New Inventory Item - Electronics
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Wireless Mouse Logitech",
+    "quantity": 25,
+    "location": "Warehouse A - Electronics Section"
+}
+
+### Add New Inventory Item - Minimal Data
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "USB Cable Type-C",
+    "quantity": 100,
+    "location": "Storage Room 1"
+}
+
+### Add New Inventory Item - With Special Characters
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Monitor 27\" 4K Samsung",
+    "quantity": 8,
+    "location": "Warehouse C - Display Area"
+}
+
+### Add Invalid Inventory Item - Missing Name
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "quantity": 10,
+    "location": "Test Location"
+}
+
+### Add Invalid Inventory Item - Negative Quantity
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Test Item",
+    "quantity": -5,
+    "location": "Test Location"
+}
+
+### Delete Inventory Item by ID (Replace {id} with actual ID from GET response)
+DELETE {{inventoryUrl}}/1
+
+### Delete Inventory Item - Different ID
+DELETE {{inventoryUrl}}/2
+
+### Delete Non-existent Inventory Item
+DELETE {{inventoryUrl}}/999
+
+### Test Sequence: Add then Get All
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Test Sequence Item",
+    "quantity": 1,
+    "location": "Test Location"
+}
+
+###
+GET {{inventoryUrl}}
+Accept: application/json

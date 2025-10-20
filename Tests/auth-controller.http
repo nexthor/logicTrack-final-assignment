@@ -1,0 +1,163 @@
+# Authentication Controller Tests
+# Base URL for local development
+@baseUrl = http://localhost:5205
+@authUrl = {{baseUrl}}/api/auth
+
+### Variables for test data
+@testEmail = test@example.com
+@testPassword = TestPassword123!
+@managerEmail = manager@example.com
+@managerPassword = ManagerPass123!
+
+### Register a new user
+POST {{authUrl}}/register
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}"
+}
+
+### Register a manager user
+POST {{authUrl}}/register
+Content-Type: application/json
+
+{
+    "email": "{{managerEmail}}",
+    "password": "{{managerPassword}}"
+}
+
+### Register with invalid email
+POST {{authUrl}}/register
+Content-Type: application/json
+
+{
+    "email": "invalid-email",
+    "password": "{{testPassword}}"
+}
+
+### Register with weak password
+POST {{authUrl}}/register
+Content-Type: application/json
+
+{
+    "email": "weak@example.com",
+    "password": "123"
+}
+
+### Register with missing fields
+POST {{authUrl}}/register
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}"
+}
+
+### Register duplicate user (should fail)
+POST {{authUrl}}/register
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}"
+}
+
+### Login with valid credentials
+# @name login
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}"
+}
+
+### Login manager user
+# @name managerLogin
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "{{managerEmail}}",
+    "password": "{{managerPassword}}"
+}
+
+### Login with invalid email
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "nonexistent@example.com",
+    "password": "{{testPassword}}"
+}
+
+### Login with wrong password
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}",
+    "password": "wrongpassword"
+}
+
+### Login with invalid email format
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "invalid-email",
+    "password": "{{testPassword}}"
+}
+
+### Login with missing fields
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}"
+}
+
+### Assign Manager role to user
+POST {{authUrl}}/assign-role
+Content-Type: application/json
+
+{
+    "email": "{{managerEmail}}",
+    "role": "Manager"
+}
+
+### Assign Admin role to user
+POST {{authUrl}}/assign-role
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}",
+    "role": "Admin"
+}
+
+### Assign invalid role
+POST {{authUrl}}/assign-role
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}",
+    "role": "InvalidRole"
+}
+
+### Assign role to non-existent user
+POST {{authUrl}}/assign-role
+Content-Type: application/json
+
+{
+    "email": "nonexistent@example.com",
+    "role": "Manager"
+}
+
+### Assign duplicate role
+POST {{authUrl}}/assign-role
+Content-Type: application/json
+
+{
+    "email": "{{managerEmail}}",
+    "role": "Manager"
+}

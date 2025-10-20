@@ -1,0 +1,87 @@
+# Order-Inventory Relationship Management Tests
+# This file demonstrates the current limitations and suggests needed endpoints
+
+@baseUrl = http://localhost:5205
+@orderUrl = {{baseUrl}}/api/order
+@inventoryUrl = {{baseUrl}}/api/inventory
+
+### === CURRENT WORKING WORKFLOW ===
+
+### 1. Create Order First
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Relationship Test Customer",
+    "datePlaced": "2024-10-20T10:00:00Z"
+}
+
+### 2. Create Inventory Items (without orderId to avoid FK constraint)
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Laptop for Order Management",
+    "quantity": 3,
+    "location": "Main Warehouse"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Wireless Mouse for Order",
+    "quantity": 10,
+    "location": "Electronics Section"
+}
+
+### 3. Verify Order (will show empty items array)
+GET {{orderUrl}}/1
+
+### 4. Verify Inventory (will show null orderId)
+GET {{inventoryUrl}}
+
+### === SUGGESTED ENDPOINTS TO ADD ===
+
+### TODO: Add Item to Order (endpoint doesn't exist yet)
+# PUT {{orderUrl}}/1/items/1
+# Content-Type: application/json
+
+### TODO: Remove Item from Order (endpoint doesn't exist yet)  
+# DELETE {{orderUrl}}/1/items/1
+
+### TODO: Get Order Items (endpoint doesn't exist yet)
+# GET {{orderUrl}}/1/items
+
+### TODO: Update Item's Order Assignment (endpoint doesn't exist yet)
+# PUT {{inventoryUrl}}/1/order
+# Content-Type: application/json
+# {
+#     "orderId": 1
+# }
+
+### === ALTERNATIVE: Create Order with Items (if controller supported it) ===
+# POST {{orderUrl}}
+# Content-Type: application/json
+# {
+#     "customerName": "Customer with Items",
+#     "datePlaced": "2024-10-20T10:00:00Z",
+#     "items": [
+#         {
+#             "name": "Included Laptop",
+#             "quantity": 1,
+#             "location": "Warehouse A"
+#         }
+#     ]
+# }
+
+### === WORKAROUND: Direct Database Approach (Not Recommended for Production) ===
+### This would require SQL commands or additional service methods
+
+### === CLEANUP ===
+DELETE {{inventoryUrl}}/1
+###
+DELETE {{inventoryUrl}}/2
+###
+DELETE {{orderUrl}}/1

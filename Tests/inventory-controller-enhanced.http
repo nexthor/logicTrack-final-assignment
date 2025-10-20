@@ -1,0 +1,268 @@
+# Enhanced Inventory Controller Tests
+# Base URL for local development
+@baseUrl = http://localhost:5205
+@authUrl = {{baseUrl}}/api/auth
+@inventoryUrl = {{baseUrl}}/api/inventory
+
+### Step 1: Login as Manager to get JWT token
+# @name managerLogin
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "manager@example.com",
+    "password": "ManagerPass123!"
+}
+
+### Step 2: Login as regular user
+# @name userLogin
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "user@example.com",
+    "password": "UserPass123!"
+}
+
+### Extract tokens (use these in subsequent requests)
+@managerToken = {{managerLogin.response.body.token}}
+@userToken = {{userLogin.response.body.token}}
+
+### Get All Inventory Items (Authenticated User - Should Work)
+GET {{inventoryUrl}}
+Authorization: Bearer {{userToken}}
+Accept: application/json
+
+### Get All Inventory Items with Pagination
+GET {{inventoryUrl}}?page=1&pageSize=5
+Authorization: Bearer {{userToken}}
+Accept: application/json
+
+### Get All Inventory Items - Invalid Pagination
+GET {{inventoryUrl}}?page=0&pageSize=5
+Authorization: Bearer {{userToken}}
+Accept: application/json
+
+### Get All Inventory Items - Excessive Page Size
+GET {{inventoryUrl}}?page=1&pageSize=200
+Authorization: Bearer {{userToken}}
+Accept: application/json
+
+### Get All Inventory Items (Unauthenticated - Should Fail)
+GET {{inventoryUrl}}
+Accept: application/json
+
+### Get Single Inventory Item by ID
+GET {{inventoryUrl}}/1
+Authorization: Bearer {{userToken}}
+Accept: application/json
+
+### Get Non-existent Inventory Item
+GET {{inventoryUrl}}/999
+Authorization: Bearer {{userToken}}
+Accept: application/json
+
+### Add New Inventory Item (Manager - Should Work)
+# @name addItem1
+POST {{inventoryUrl}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "Laptop Dell XPS 13",
+    "quantity": 5,
+    "location": "Warehouse A - Shelf 1"
+}
+
+### Add New Inventory Item (Regular User - Should Fail)
+POST {{inventoryUrl}}
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "name": "Unauthorized Item",
+    "quantity": 1,
+    "location": "Should Fail"
+}
+
+### Add New Inventory Item with Maximum Length Fields
+POST {{inventoryUrl}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "This is a very long item name that should be within the 100 character limit set by validation",
+    "quantity": 999999,
+    "location": "This is a very long location description that should be within the 200 character limit that we have set for the location field to ensure proper data validation"
+}
+
+### Add Invalid Inventory Item - Missing Required Name
+POST {{inventoryUrl}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "quantity": 10,
+    "location": "Test Location"
+}
+
+### Add Invalid Inventory Item - Negative Quantity
+POST {{inventoryUrl}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "Test Item",
+    "quantity": -5,
+    "location": "Test Location"
+}
+
+### Add Invalid Inventory Item - Name Too Long
+POST {{inventoryUrl}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "This name is intentionally way too long and exceeds the 100 character limit that we have set for validation purposes in our system",
+    "quantity": 1,
+    "location": "Test Location"
+}
+
+### Add Invalid Inventory Item - Location Too Long
+POST {{inventoryUrl}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "Valid Name",
+    "quantity": 1,
+    "location": "This location description is intentionally way too long and exceeds the 200 character limit that we have set for validation purposes in our inventory management system to test boundary conditions"
+}
+
+### Add Inventory Item - Minimal Valid Data
+POST {{inventoryUrl}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "USB Cable",
+    "quantity": 0
+}
+
+### Update Inventory Item - Full Update (Manager - Should Work)
+PUT {{inventoryUrl}}/1
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "Updated Laptop Dell XPS 15",
+    "quantity": 8,
+    "location": "Warehouse B - Shelf 2"
+}
+
+### Update Inventory Item - Partial Update (Name Only)
+PUT {{inventoryUrl}}/1
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "Partially Updated Laptop"
+}
+
+### Update Inventory Item - Partial Update (Quantity Only)
+PUT {{inventoryUrl}}/1
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "quantity": 12
+}
+
+### Update Inventory Item (Regular User - Should Fail)
+PUT {{inventoryUrl}}/1
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "name": "Unauthorized Update",
+    "quantity": 99
+}
+
+### Update Non-existent Inventory Item
+PUT {{inventoryUrl}}/999
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "Non-existent Item",
+    "quantity": 1
+}
+
+### Update with Invalid Data - Negative Quantity
+PUT {{inventoryUrl}}/1
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "quantity": -10
+}
+
+### Update with Invalid Data - Name Too Long
+PUT {{inventoryUrl}}/1
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "This updated name is intentionally way too long and exceeds the 100 character limit set for validation"
+}
+
+### Delete Inventory Item (Manager - Should Work)
+DELETE {{inventoryUrl}}/2
+Authorization: Bearer {{managerToken}}
+
+### Delete Inventory Item (Regular User - Should Fail)
+DELETE {{inventoryUrl}}/3
+Authorization: Bearer {{userToken}}
+
+### Delete Non-existent Inventory Item
+DELETE {{inventoryUrl}}/999
+Authorization: Bearer {{managerToken}}
+
+### Delete Inventory Item (Unauthenticated - Should Fail)
+DELETE {{inventoryUrl}}/1
+
+### Test Sequence: Create, Read, Update, Delete
+# Create
+# @name createForCrud
+POST {{inventoryUrl}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "CRUD Test Item",
+    "quantity": 5,
+    "location": "Test Location"
+}
+
+### Read the created item
+@createdItemId = {{createForCrud.response.body.id}}
+GET {{inventoryUrl}}/{{createdItemId}}
+Authorization: Bearer {{userToken}}
+
+### Update the created item
+PUT {{inventoryUrl}}/{{createdItemId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "name": "Updated CRUD Test Item",
+    "quantity": 10
+}
+
+### Delete the created item
+DELETE {{inventoryUrl}}/{{createdItemId}}
+Authorization: Bearer {{managerToken}}
+
+### Verify deletion
+GET {{inventoryUrl}}/{{createdItemId}}
+Authorization: Bearer {{userToken}}

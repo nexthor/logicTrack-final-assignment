@@ -1,0 +1,136 @@
+# Performance Testing Examples
+@host = http://localhost:5205
+
+## Test Multi-Level Caching Performance
+
+### Test Cache Performance (Inventory Collections)
+
+# First request - Cache Miss (should be slower ~150ms)
+GET {{host}}/api/inventory?page=1&pageSize=5
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Second request - Memory Cache Hit (should be much faster ~5ms)
+GET {{host}}/api/inventory?page=1&pageSize=5
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Third request - HTTP Cache Hit (should be fastest ~1ms)
+GET {{host}}/api/inventory?page=1&pageSize=5
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Different page - Cache Miss again
+GET {{host}}/api/inventory?page=2&pageSize=5
+Authorization: Bearer {{jwt_token}}
+
+### Test Order Performance
+
+# Get all orders with items
+GET {{host}}/api/order?page=1&pageSize=5&includeItems=true
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Get all orders without items (should be faster)
+GET {{host}}/api/order?page=1&pageSize=5&includeItems=false
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Get specific order with items
+GET {{host}}/api/order/1?includeItems=true
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Get specific order without items (should be faster)
+GET {{host}}/api/order/1?includeItems=false
+Authorization: Bearer {{jwt_token}}
+
+### Test Entity-Level Cache Performance
+
+# First request - Entity Cache Miss (~25ms)
+GET {{host}}/api/inventory/1?includeOrder=false
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Second request - Entity Cache Hit (~2ms)
+GET {{host}}/api/inventory/1?includeOrder=false
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Different variation - Different Cache Key (~25ms first time)
+GET {{host}}/api/inventory/1?includeOrder=true
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Same variation - Cache Hit (~2ms)
+GET {{host}}/api/inventory/1?includeOrder=true
+Authorization: Bearer {{jwt_token}}
+
+### Test Create Performance
+
+# Create new inventory item
+POST {{host}}/api/inventory
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+    "name": "Performance Test Item",
+    "quantity": 100,
+    "location": "Warehouse A"
+}
+
+### 
+
+# Create new order
+POST {{host}}/api/order
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+    "customerName": "Performance Test Customer",
+    "datePlaced": "2024-10-20T10:00:00Z",
+    "items": []
+}
+
+### Test Cache Invalidation Performance
+
+# Get item (should be cache hit if run after previous tests ~2ms)
+GET {{host}}/api/inventory/1
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Update inventory item - This will invalidate cache
+PUT {{host}}/api/inventory/1
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+    "name": "Updated Performance Test Item",
+    "quantity": 150
+}
+
+### 
+
+# Get item again - Should be cache miss now (~25ms)
+GET {{host}}/api/inventory/1
+Authorization: Bearer {{jwt_token}}
+
+### 
+
+# Get item once more - Should be cache hit again (~2ms)
+GET {{host}}/api/inventory/1
+Authorization: Bearer {{jwt_token}}
+
+### Variables for easy testing
+@host = https://localhost:7001
+@jwt_token = your_jwt_token_here

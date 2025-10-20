@@ -1,0 +1,202 @@
+# Extended Order Controller Tests - With Relationship Management
+# Tests for the new OrderControllerExtended with relationship management capabilities
+
+@baseUrl = http://localhost:5205
+@orderUrl = {{baseUrl}}/api/orderextended
+@inventoryUrl = {{baseUrl}}/api/inventory
+
+### === SETUP: Create Test Data ===
+
+### 1. Create a test order
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Extended Test Customer",
+    "datePlaced": "2024-10-20T10:00:00Z"
+}
+
+### 2. Create inventory items (independent)
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Extended Test Laptop",
+    "quantity": 3,
+    "location": "Extended Test Warehouse"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Extended Test Mouse", 
+    "quantity": 5,
+    "location": "Extended Test Warehouse"
+}
+
+###
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Extended Test Monitor",
+    "quantity": 2,
+    "location": "Extended Test Warehouse"
+}
+
+### === RELATIONSHIP MANAGEMENT TESTS ===
+
+### 3. Add item to order (NEW ENDPOINT)
+POST {{orderUrl}}/1/items/1
+Content-Type: application/json
+
+### 4. Add another item to order
+POST {{orderUrl}}/1/items/2
+Content-Type: application/json
+
+### 5. Verify order now has items
+GET {{orderUrl}}/1
+Accept: application/json
+
+### 6. Get order items only (NEW ENDPOINT)
+GET {{orderUrl}}/1/items
+Accept: application/json
+
+### 7. Try to add same item again (should fail)
+POST {{orderUrl}}/1/items/1
+Content-Type: application/json
+
+### 8. Try to add item to non-existent order (should fail)
+POST {{orderUrl}}/999/items/3
+Content-Type: application/json
+
+### 9. Try to add non-existent item (should fail)
+POST {{orderUrl}}/1/items/999
+Content-Type: application/json
+
+### 10. Remove item from order (NEW ENDPOINT)
+DELETE {{orderUrl}}/1/items/2
+
+### 11. Verify item was removed
+GET {{orderUrl}}/1/items
+Accept: application/json
+
+### 12. Try to remove item not in order (should fail)
+DELETE {{orderUrl}}/1/items/3
+
+### === CREATE ORDER WITH ITEMS TEST ===
+
+### 13. Create order with items in single request (NEW ENDPOINT)
+POST {{orderUrl}}/with-items
+Content-Type: application/json
+
+{
+    "customerName": "Bulk Order Customer",
+    "datePlaced": "2024-10-20T15:00:00Z",
+    "items": [
+        {
+            "name": "Bulk Item 1",
+            "quantity": 10,
+            "location": "Bulk Warehouse A"
+        },
+        {
+            "name": "Bulk Item 2", 
+            "quantity": 5,
+            "location": "Bulk Warehouse B"
+        },
+        {
+            "name": "Bulk Item 3",
+            "quantity": 15,
+            "location": "Bulk Warehouse C"
+        }
+    ]
+}
+
+### 14. Verify bulk order creation
+GET {{orderUrl}}/2
+Accept: application/json
+
+### === CROSS-ORDER ASSIGNMENT TESTS ===
+
+### 15. Create another order
+POST {{orderUrl}}
+Content-Type: application/json
+
+{
+    "customerName": "Second Order Customer",
+    "datePlaced": "2024-10-20T16:00:00Z"
+}
+
+### 16. Try to assign already assigned item to new order (should fail)
+POST {{orderUrl}}/3/items/1
+Content-Type: application/json
+
+### 17. Create independent item and assign to second order
+POST {{inventoryUrl}}
+Content-Type: application/json
+
+{
+    "name": "Second Order Item",
+    "quantity": 1,
+    "location": "Special Storage"
+}
+
+###
+POST {{orderUrl}}/3/items/7
+Content-Type: application/json
+
+### 18. Verify second order has the item
+GET {{orderUrl}}/3
+Accept: application/json
+
+### === VALIDATION TESTS ===
+
+### 19. Create order with empty items array
+POST {{orderUrl}}/with-items
+Content-Type: application/json
+
+{
+    "customerName": "Empty Items Customer",
+    "datePlaced": "2024-10-20T17:00:00Z",
+    "items": []
+}
+
+### 20. Create order with no items property
+POST {{orderUrl}}/with-items
+Content-Type: application/json
+
+{
+    "customerName": "No Items Property Customer", 
+    "datePlaced": "2024-10-20T17:30:00Z"
+}
+
+### === CLEANUP ===
+
+### 21. Get all orders before cleanup
+GET {{orderUrl}}
+Accept: application/json
+
+### 22. Get all inventory before cleanup
+GET {{inventoryUrl}}
+Accept: application/json
+
+### 23. Delete orders (items should be unassigned due to SetNull)
+DELETE {{orderUrl}}/1
+###
+DELETE {{orderUrl}}/2
+###
+DELETE {{orderUrl}}/3
+###
+DELETE {{orderUrl}}/4
+###
+DELETE {{orderUrl}}/5
+
+### 24. Verify orders deleted and items unassigned
+GET {{orderUrl}}
+Accept: application/json
+
+###
+GET {{inventoryUrl}}
+Accept: application/json
